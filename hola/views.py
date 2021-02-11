@@ -3,4 +3,14 @@ from django.shortcuts import render
 
 # Create your views here.
 def index(request):
-    return HttpResponse("Hola desde Django proyect app hola")
+    return render(request, "hola/index.html")
+
+def brian(request):
+    return HttpResponse("Hola Brian")
+
+def greet(request, name):
+    return render(request, "hola/greet.html", {
+        "name": name.capitalize()  #python dictionary
+        })
+
+
