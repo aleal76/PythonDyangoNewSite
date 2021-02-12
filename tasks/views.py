@@ -1,11 +1,39 @@
+from django import forms
+from django.http.response import HttpResponseRedirect
 from django.shortcuts import render
+from django.urls import reverse
 
-tasks = ["comer", "leer", "viajar"]
+#Base de datos por el momento
+#tasks = [] acá la ven todos desde cualquier sesión, ahora paso a meter la info en cada sesión (ver abajo)
+
+
+class NewTaskForm(forms.Form):
+    task = forms.CharField(label="New Task")
+    priority = forms.IntegerField(label="Priority", min_value=1, max_value=5)
+
+
 # Create your views here.
+## ojo debo hacer migrate para que se creen en django las tablas
 def index(request):
-    return render(request, "tasks/index.html",{
-        "tasks": tasks
+    if "tasks" not in request.session:
+        request.session["tasks"] = []
+    return render(request, "tasks/index.html", {
+        "tasks": request.session["tasks"] 
     })
 
+
 def add(request):
-        return render(request, "tasks/add.html")
+    if request.method == "POST":
+        form = NewTaskForm(request.POST)
+        if form.is_valid():
+            task = form.cleaned_data["task"]
+            request.session["tasks"] += [task]
+            return HttpResponseRedirect(reverse("tasks:index"))
+        else:
+            return render(request, "tasks/add.html", {
+                "form": form
+            })
+
+    return render(request, "tasks/add.html", {
+        "form": NewTaskForm()
+    })
